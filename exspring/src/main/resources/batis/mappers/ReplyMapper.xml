@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.exam.myapp.reply.ReplyDao">
+	
+	<select id="selectReplyList" resultType="ReplyVo">
+		SELECT REP_NO, REP_WRITER, REP_CONTENT, REP_REG_DATE, REP_BBS_NO
+		FROM REPLY
+		WHERE REP_BBS_NO = #{repBbsNo} 
+		ORDER BY REP_REG_DATE DESC
+		
+  	</select>
+  	
+  	<select id="selectAttach" resultType="AttachVo">
+  		SELECT ATT_NO, ATT_ORG_NAME, ATT_NEW_NAME, ATT_BBS_NO
+		FROM ATTACH
+		WHERE ATT_NO = #{attNo}
+  	</select>
+  	
+  	<insert id="insertReply" parameterType="ReplyVo">
+  		<selectKey keyProperty="repNo" resultType="int" order="BEFORE">
+  			SELECT REP_SEQ.NEXTVAL FROM DUAL
+  		</selectKey>
+  		INSERT INTO REPLY (
+	  		REP_NO,
+			REP_CONTENT,
+			REP_WRITER,
+      		REP_BBS_NO
+		) VALUES (#{repNo}, #{repContent}, #{repWriter}, #{repBbsNo})
+  	</insert>
+  	
+  	<delete id="deleteReply">
+  		DELETE FROM REPLY WHERE REP_NO = #{repNo} AND REP_WRITER = #{repWriter}
+  	</delete>
+  
+</mapper>

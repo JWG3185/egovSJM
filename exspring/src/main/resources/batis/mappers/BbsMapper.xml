@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.exam.myapp.bbs.BbsDao">
+	
+	<resultMap type="BbsVo" id="BbsMap">
+		<id property="bbsNo" column="BBS_NO" />
+		<result property="bbsTitle" column="BBS_TITLE" />
+		<result property="bbsContent" column="BBS_CONTENT" />
+		<result property="bbsWriter" column="BBS_WRITER" />
+		<result property="bbsRegDate" column="BBS_REG_DATE" />
+		<result property="bbsCount" column="BBS_COUNT" />
+		<!-- JOIN 조회 결과를 담기위한 resultMap -->
+		<!-- 1:1 관계이면 association 엘리먼트를, 1:N 관계이면 collection 엘리면트를 사용 -->
+		<collection property="attachList" ofType="AttachVo">
+			<id property="attNo" column="ATT_NO" />
+			<result property="attOrgName" column="ATT_ORG_NAME" />
+			<result property="attNewName" column="ATT_NEW_NAME" />
+			<result property="attBbsNo" column="ATT_BBS_NO" />
+		</collection>
+		
+		<!-- BBS_NO 컬럼값을 파라미터로 전달하면서, -->
+		<!-- 이름이 "com.exam.myapp.bbs.AttachDao.selectAttachList"인 SQL문을 실행하고, -->
+		<!-- 그 결과를 attachList 속성값으로 저장 -->
+		<!-- <collection property="attachList" ofType="AttachVo" column="BBS_NO"
+			select="com.exam.myapp.bbs.AttachDao.selectAttachList"/> -->
+	</resultMap>
+	
+	<sql id="searchCondition">
+		<!-- trim 태그 내부에 내용이 있을 경우에만, 내용 앞에 prefix 속성값을 추가 -->
+		<!-- 내용의 시작 부분이 prefixOverrides 속성값인 경우 그 부분을 내용에서 제거 -->
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			<if test="(searchType == 'title' or searchType == 'total') and searchWord != null and searchWord != ''">
+				BBS_TITLE LIKE '%' || #{searchWord} || '%'
+			</if>
+			<if test="(searchType == 'content' or searchType == 'total') and searchWord != null and searchWord != ''">
+				OR BBS_CONTENT LIKE '%' || #{searchWord} || '%'
+			</if>
+		</trim>
+	</sql>
+	
+	<select id="selectBbsList" resultType="BbsVo">
+		SELECT BBS_NO, BBS_TITLE, BBS_WRITER, BBS_REG_DATE, BBS_COUNT
+		FROM(
+			SELECT ROWNUM RNUM, B.*
+		  	FROM(
+		  		SELECT BBS_NO, BBS_TITLE, BBS_WRITER, BBS_REG_DATE, BBS_COUNT 
+				FROM BBS
+				<include refid="searchCondition"></include>
+				ORDER BY BBS_REG_DATE DESC) B 
+		)
+		<![CDATA[
+		WHERE #{firstRecordIndex} < RNUM AND RNUM <= #{lastRecordIndex}
+		]]>
+  	</select>
+  	
+  	<select id="selectBbs" resultMap="BbsMap">
+  		SELECT B.BBS_NO, B.BBS_TITLE, B.BBS_WRITER, B.BBS_CONTENT, B.BBS_REG_DATE, 
+   				A.ATT_NO, A.ATT_ORG_NAME, A.ATT_NEW_NAME, A.ATT_BBS_NO
+		FROM (SELECT BBS_NO, BBS_TITLE, BBS_WRITER, BBS_CONTENT, BBS_REG_DATE 
+				FROM BBS 
+				WHERE BBS_NO = #{bbsNo}) B 
+		LEFT JOIN ATTACH A ON B.BBS_NO = A.ATT_BBS_NO 
+		
+		<!-- SELECT BBS_NO, BBS_TITLE, BBS_WRITER, BBS_CONTENT, BBS_REG_DATE 
+		FROM BBS 
+		WHERE BBS_NO = #{bbsNo} -->
+		
+  	</select>
+  	
+  	<insert id="insertBbs" parameterType="BbsVo">
+  		<selectKey keyProperty="bbsNo" resultType="int" order="BEFORE">
+  			SELECT BBS_SEQ.NEXTVAL FROM DUAL
+  		</selectKey>
+  		INSERT INTO BBS (
+	  		BBS_NO,
+			BBS_TITLE,
+			BBS_CONTENT,
+			BBS_WRITER
+		) VALUES (#{bbsNo}, #{bbsTitle}, #{bbsContent}, #{bbsWriter})
+  	</insert>
+  	
+  	<delete id="deleteBbs" parameterType="java.lang.Integer">
+  		DELETE FROM BBS WHERE BBS_NO = #{bbsNo}
+  	</delete>
+  	
+  	<update id="updateBbs" parameterType="BbsVo">
+  		UPDATE BBS 
+  		SET 
+  		BBS_TITLE = #{bbsTitle}, BBS_CONTENT = #{bbsContent}
+  		WHERE BBS_NO = #{bbsNo} AND BBS_WRITER = #{bbsWriter}
+  	</update>
+  	
+  	<select id="selectBbsCount" resultType="java.lang.Integer">
+		SELECT COUNT(*) 
+		FROM BBS
+		<include refid="searchCondition"></include>
+  	</select>
+  
+</mapper>
