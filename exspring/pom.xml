@@ -34,13 +34,21 @@
 			<artifactId>spring-webmvc</artifactId>
 			<version>${org.springframework-version}</version>
 		</dependency>
-			
+		
+		<!-- 검증 https://mvnrepository.com/artifact/org.hibernate.validator/hibernate-validator -->
+		<dependency>
+		    <groupId>org.hibernate.validator</groupId>
+		    <artifactId>hibernate-validator</artifactId>
+		    <version>6.1.7.Final</version>
+		</dependency>
+				
 		<!-- 스프링의 데이터베이스 관련 기능을 포함하는 모듈 -->
 		<dependency>
 		    <groupId>org.springframework</groupId>
 		    <artifactId>spring-jdbc</artifactId>
 		    <version>${org.springframework-version}</version>
 		</dependency>
+		
 		<!-- 마이바티스와 스프링 연동을 위한 라이브러리 -->
 		<dependency>
 		  <groupId>org.mybatis</groupId>
