@@ -2,6 +2,7 @@ package com.exam.myapp;
 
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 // 컨트롤러(요청을 받았을때 실행되는 객체)로서 스프링(DispatherServlet)에 등록
 @Controller
@@ -74,6 +76,17 @@ public class HomeController {
 		
 		return "test";
 		
+	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/cal")
+	public Map<String, Object> name(double x, double y) {
+		System.out.println("ajax 테스트!");
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("sum", x+y);
+		map.put("mul", x*y);
+		
+		return map;
 	}
 	
 	

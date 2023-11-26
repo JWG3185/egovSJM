@@ -21,12 +21,12 @@
 	<select id="selectMemberList" resultType="MemberVo">
 	<!-- resultMap속성을 사용하여, id가 MemberMap인 resultMap에 써놓은대로 조회결과를 담도록 설정 -->
   	<!-- <select id="selectMemberList" resultMap="MemberMap"> -->
-    	select mem_id, mem_name, mem_point from MEMBER
+    	select mem_id, mem_name, mem_pass, mem_point from MEMBER
     	ORDER BY mem_id DESC
   	</select>
   	
   	<select id="selectMember" resultType="MemberVo">
-    	select mem_id, mem_name, mem_point from MEMBER 
+    	select mem_id, mem_name, mem_point, mem_pass from MEMBER 
     	where mem_id = #{memId}
   	</select>
   

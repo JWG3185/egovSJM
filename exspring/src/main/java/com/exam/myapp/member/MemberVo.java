@@ -14,7 +14,7 @@ public class MemberVo {
 	//@Positive @PositiveOrZero @Negative @NegativeOrZero
 	//@Future @Past
 	
-	@NotNull @Size(min = 1) @Email 
+	@NotNull @Size(min = 1)
 	private String memId;
 	@NotNull @Size(min = 1)
 	private String memPass;
