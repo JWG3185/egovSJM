@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Favicons -->
+  	<link href="resources/assets/img/favicon.png" rel="icon">
+  	
+    <title>회원관리</title>
+    <style>
+        table{
+            border-collapse: collapse;
+            border-spacing: 0px;
+            margin-top: 10px;
+        }
+        th,td{
+            border: 1px solid black;
+        }
+        form:not(.active){
+            display: none;
+        }
+        form{
+            position: fixed;
+            left: 40%;
+            top: 20%;
+            border: 2px solid black;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        #stuForm.modify .modify-hide{
+        	display: none;		/* 자리는 차지하지않고 안보임 */
+        	/* visibility: hidden;	 자리는 차지하면서 안보임*/
+        }
+    </style>
+    <script>
+
+        window.onload = function () {
+
+            let noInput = document.querySelector('input[name="memId"]');
+            let passInput = document.querySelector('input[name="memPass"]');
+            let nameInput = document.querySelector('input[name="memName"]');
+            let pointInput = document.querySelector('input[name="memPoint"]');
+
+            let sf = document.querySelector('#stuForm');
+
+            let saveBtn = document.querySelector('#save');
+            let delBtn = document.querySelector('#del');
+            let cancelBtn = document.querySelector('#cancel');
+            let addBtn = document.querySelector('#add');
+
+            let tb = document.querySelector('#stuTable > tbody');
+            let rowTemp = document.querySelector('#row');
+            
+            function refreshList() {
+				
+            	fetch('/myapp/api/member/list', {
+    				method: 'GET',
+    			})
+    			.then(response => response.json())
+    			.then(function (data) {
+    				console.log(data);		// 데이터 확인-----------------
+    				
+    				tb.innerHTML = '';
+                    let dfrag = document.createDocumentFragment();
+                    data.forEach(function (st) {
+                        let r = rowTemp.content.cloneNode(true);
+                        r.querySelector('.id').textContent = st.memId;
+                        r.querySelector('.pwd').textContent = st.memPass;
+                        r.querySelector('.name').textContent = st.memName;
+                        r.querySelector('.point').textContent = st.memPoint;
+                        r.querySelector('.edit').dataset.no = st.memId;
+                        dfrag.append(r);
+                    });
+                    tb.append(dfrag);
+    				
+    			})
+    			.catch(function (error) {
+    				console.log(error);
+    				alert('회원목록 조회 실패');
+    			});
+                
+            };
+            
+            refreshList();
+            initForm();
+            
+
+            function initForm() {
+                noInput.readOnly = false;
+                sf.classList.remove('modify', 'active');
+
+                noInput.value = '';
+                passInput.value = '';
+                nameInput.value = '';
+                pointInput.value = '';
+
+                delBtn.disabled = true;
+            }
+
+            saveBtn.addEventListener('click', function () {
+				let reqUrl = '/myapp/api/member/add';
+				let msg = '회원 추가 실패';
+				
+				if(sf.classList.contains('modify')){    // 변경
+					reqUrl = '/myapp/api/member/edit';
+					msg = '회원 정보 변경 실패';
+				}
+				
+               	fetch(reqUrl, {
+  					method: 'POST',
+  					body: new FormData(sf)
+      			})
+      			.then(response => response.json())
+      			.then(function (data) {
+      				console.log(data);
+      	            refreshList();
+      	            initForm();
+      	            alert(data.num + '명의 회원 저장 성공');
+      			})
+      			.catch(function (error) {
+      				console.log(error);
+      				alert(msg);
+      			});                	
+                
+            });
+
+            //3.변경버튼을 클릭하면, 클릭한 학생 정보를 stuForm에 출력
+            //  3-1. stuForm의 학생정보를 변경하고 저장버튼을 클릭하면,
+            //      studentList에서 해당 학생정보를 변경
+
+            document.querySelector('#stuTable').addEventListener('click', function (e) {
+                //if(e.target.classList.contains('edit')) {
+                if(e.target.matches('.edit')){  // 지정한 CSS선택자와 일치하는지 여부
+                    let no = e.target.dataset.no;
+                
+                    fetch('/myapp/api/member/edit?memId=' + no, {
+//                    fetch('/myapp/api/member/edit?' + new URLsearchParams({memId : no}).toString(), {
+       					method: 'GET'
+           			})
+           			.then(response => response.json())
+           			.then(function (data) {
+           				console.log(data);
+           				
+           				noInput.value = data.memId;
+                        nameInput.value = data.memName;
+                        passInput.value = data.memPass;
+                        pointInput.value = data.memPoint;
+                        noInput.readOnly = true;
+                        sf.classList.add('modify')
+                        delBtn.disabled = false;
+                        sf.classList.add('active')
+           				
+           			})
+           			.catch(function (error) {
+           				console.log(error);
+           				alert('회원 추가 실패');
+           			});
+                
+                }
+            });
+
+
+            //  3-2. 삭제버튼을 클릭하면, 현재 학생정보를 studentList에서 삭제
+            //* studentList 데이터는 항상 최신 상태를 stuTable에 출력
+
+            delBtn.addEventListener('click', function () {
+            	
+            	let no = noInput.value;   
+            	
+                if(sf.classList.contains('modify')){ 
+//                	fetch('/myapp/api/member/del?memId=' + no, {
+                    fetch('/myapp/api/member/del?' + new URLSearchParams({memId : no}).toString(), {
+       					method: 'GET'
+           			})
+          			.then(response => response.json())
+          			.then(function (data) {
+          				console.log(data);
+          	            refreshList();
+          	            initForm();
+          	            alert(data.num + '명의 회원 삭제 성공');
+          			})
+          			.catch(function (error) {
+          				console.log(error);
+          				alert('회원 삭제 실패');
+          			});	
+                }
+                	
+            });
+
+            cancelBtn.addEventListener('click',function () {
+                initForm();
+            });
+
+            addBtn.addEventListener('click', function () {
+                sf.classList.add('active');
+            });
+
+    }
+       
+    </script>
+</head>
+<body>
+    <button type="button" id="add">회원 추가</button>
+    <table id="stuTable">
+        <thead><tr><th>아이디</th><th>비밀번호</th><th>이름</th><th>포인트</th><th>처리</th></tr></thead>
+        <tbody>
+        </tbody>
+    </table>
+    <form id="stuForm" action="">
+    	<div>아이디 : <input type="text" name="memId" ></div>
+        <div class="modify-hide">비밀번호 : <input type="password" name="memPass" ></div>
+        <div>이름 : <input type="text" name="memName" ></div>
+        <div>포인트 : <input type="number" name="memPoint" ></div>
+        <input type="button" id="save" value="저장" >
+        <input type="button" id="del" value="삭제" >
+        <input type="button" id="cancel" value="취소" >
+    </form>
+    <!-- 보이진 않지만 돔 객체로 저장되어 등록되어있음 -->
+    <template id="row">
+        <tr>
+            <td class="id"></td>
+            <td class="pwd"></td>
+            <td class="name"></td>
+            <td class="point"></td>
+            <td>
+                <button type="button" class="edit">변경</button>
+            </td>
+        </tr>
+    </template>
+</body>
+</html>

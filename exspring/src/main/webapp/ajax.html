@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>AJAX TEST</title>
+</head>
+<body>
+	<h1>AJAX 하이</h1>
+	
+	<form action="" id="myform">
+		x : <input type="number" name="x" value="1">
+		y : <input type="number" name="y" value="3">
+		<input type="button" value="전송" id="send">
+		<input type="button" value="전송2" id="send2">
+	</form>
+	
+	<h1 id="result"></h1>
+	
+	<script type="text/javascript">
+	
+		let mf = document.querySelector('#myform');
+		let xInput = document.querySelector('input[name="x"]');
+		let yInput = document.querySelector('input[name="y"]');
+		let resElm = document.querySelector('#result');
+
+		document.querySelector('#send').addEventListener('click', function() {
+		
+		let xhr = new XMLHttpRequest();	//AJAX 요청 전송 및 응갑 수신을 담당하는 객체
+		
+		xhr.responseType = 'json';	//'text','json','document','blob','arraybuffer' 사용 가능
+		
+		xhr.onload = function(){	// 성공적으로 응답을 받은 경우 실행
+			console.log('성공');
+			console.log('xhr.status : ' + xhr.status);	// 응답상태코드
+			console.log("xhr.getResponseHeader('Content-Type') : " + xhr.getResponseHeader('Content-Type'));	// 응답헤더값
+			//console.log("xhr.responseText : " + xhr.responseText);	// 응답 내용을 문자열로 저장
+			//console.log(xhr.responseXML);	// 응답 내용을 XML문서로 파싱한 document 객체를 저장
+			//console.log(xhr.response);	// 응답 내용을 responseType 설정에 따라 적절한 변환하여 결과에 저장
+			//resElm.textContent = xhr.responseText;	//==='{"mul":3.0,"sum":4.0}'
+			
+			//JSON.parse('JSON문자열') === 자바스크립트 객체	
+			//JSON.stringify(자바스크립트 객체) === 'JSON문자열'
+			//let data = JSON.parse(xhr.responseText);	// '{"mul":3.0,"sum":4.0}' -> {"mul":3.0,"sum":4.0}
+			//let data = JSON.parse(xhr.response);
+			
+			// response 속성에는 JSON문자열을 자바스크립트 객체로 변환한 결과가 저장
+			let data = xhr.response;
+			resElm.textContent = data.sum + ',' + data.mul
+		};
+		
+		xhr.onerror = function(){	// 요청에 대한 응답을 받지 못하고 실패한 경우 실행
+			console.log('실패');
+		};
+		
+		xhr.onloadend = function(){	// 성공 또는 실패에 관계없이 요청 처리가 끝난 경우 실행
+			console.log('종료');
+		};
+		
+		//xhr.open('GET','/myapp/cal?x=' + xInput.value + '&y=' + yInput.value);	// 요청 방식과 주소 설정
+		// URLSearchParams : 객체 형태의 파라미터 값들을 파라미터 문자열로 변환해주는 객체
+		//xhr.open('GET','/myapp/cal?' + new URLSearchParams('x=' + xInput.value + '&y=' + yInput.value).toString() );	// 요청 방식과 주소 설정
+		//xhr.open('GET','/myapp/cal?' + new URLSearchParams({x : xInput.value, y : yInput.value}).toString() );	// 요청 방식과 주소 설정
+		//xhr.open('GET','/myapp/cal?' + new URLSearchParams(new FormData(mf)).toString() );	// 요청 방식과 주소 설정
+		xhr.open('POST','/myapp/cal');	// 요청 방식과 주소 설정
+		xhr.setRequestHeader('Accept', 'application/json');	// 요청헤더 값 설정
+		//xhr.send(new URLSearchParams({x : xInput.value, y : yInput.value}) );	// 요청 전송(메시지 본문에 담아서 전송할 데이터를 인자로 전달)
+		xhr.send(new FormData(mf));	// 파일 전송도 가능
+		
+		});
+		
+		/*
+		// fetch('요청주소','어떻게 요청보낼지에 대한 설정, 객체로')
+		fetch('요청주소', {
+			method: '요청방식',
+			headers: {'요청헤더명':'요청헤더값', '요청헤더명':'요청헤더값'},
+			body: '요청메시지 본문에 담아서 전동할 데이터(문자열, URLSearchParams, FormData 사용가능)'
+		}).then(function (response) {	// 성공적으로 응답을 받은 경우 실행
+			console.log(response.status); // 응답 상태 코드
+			console.log(response.ok); // 응답 상태 코드가 200 ~ 299인지 여부
+			console.log(response.headers.get('응답헤더명')); // 응답헤더값
+			console.log(response.body); // 응답 내용(본문)을 읽을 수 있는 스트림
+			// 응답 내용을 다양한 타입으로 변환해주는 메서드 존재
+			response.text()	// 응답내용을 문자열 변환
+			response.json()	// 응답내용을 JSON문자열로 해적하여 자바스크립트 객체로 변환
+			response.blob()	// 응답내용을 Blob 객체로 변환
+			response.arraybuffer()	// 응답내용을 Arraybuffer 객체로 변환
+			response.formData()	// 응답내용을 FormData 객체로 변환
+		}).catch(function (error) {	// 요청에 대한 응답을 받지 못하고 실패한 경우 실행
+			
+		}).finally(function (error) {	// 성공 또는 실패에 관계없이 요청 처리가 끝난 경우 실행
+			
+		});	
+		*/
+		
+		
+		document.querySelector('#send2').addEventListener('click', function () {
+			fetch('/myapp/cal', {
+				method: 'POST',
+				//body: new URLSearchParams({x : xInput.value, y : yInput.value})
+				body: new FormData(mf)
+			}).then(function (response) {	// 성공적으로 응답을 받은 경우 실행
+				return response.json();
+			}).then(function (data) {	// response.json()의 결과가 인자로 전달됨
+				resElm.textContent = data.sum + ',' + data.mul;
+			}).catch(function (error) {
+				console.log(error);
+			});
+		});
+		
+			
+			
+		
+		
+		
+	</script>
+</body>
+</html>

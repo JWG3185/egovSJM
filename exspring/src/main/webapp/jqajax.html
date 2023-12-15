@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>jQuery AJAX TEST</title>
+<!-- 현재 문서 내의 모든 상대결로의 공통적인 부분을 설정 가능 -->
+<base href="/myapp/">
+<script src="resources/js/jquery-3.7.0.min.js"></script>
+</head>
+<body>
+	<h1>AJAX 하이</h1>
+	
+	<form action="" id="myform">
+		x : <input type="number" name="x" value="1">
+		y : <input type="number" name="y" value="3">
+		<input type="button" value="전송" id="send">
+		<input type="button" value="전송2" id="send2">
+	</form>
+	
+	<h1 id="result"></h1>
+	
+	<script>
+	
+		let mf = $('#myform');
+		let xInput = $('input[name="x"]');
+		let yInput = $('input[name="y"]');
+		let resElm = $('#result');
+
+		$('#send').on('click', function() {
+		
+			$.ajax({
+				url: 'cal'
+				, method: 'POST'
+				, headers: {'Accept': 'application/json'}
+				, data: mf.serialize()
+				, dataType: 'json'
+			})
+			.done(function(data, status, xhr){	// 성공적으로 응답을 받은 경우 실행
+				console.log('성공', data);
+				console.log(status);	//success
+				console.log(xhr);
+				console.log(xhr.status);	// 200
+				console.log(xhr.getResponseHeader('Content-Type'));
+				resElm.html('합: ' + data.sum + ', 곱: ' + data.mul);
+			})
+			.fail(function(){	// 요청에 대한 응답을 받지 못하고 실패한 경우 실행
+				console.log('실패');
+			})
+			.always(function(){	// 성공 또는 실패에 관계없이 요청 처리가 끝난 경우 실행
+				console.log('종료');
+			});
+		
+		});
+		
+		$('#send2').on('click', function() {
+			
+			$.ajax({
+				url: 'cal'
+				, method: 'GET'
+				, data: {x: xInput.val(), y: yInput.val()}
+//				, data: mf.serialize()
+				, dataType: 'json'
+			})
+			.done(function(data, status, xhr){	// 성공적으로 응답을 받은 경우 실행
+				resElm.html('합: ' + data.sum + ', 곱: ' + data.mul);
+			})
+			.fail(function(){	// 요청에 대한 응답을 받지 못하고 실패한 경우 실행
+				console.log('실패');
+			});
+		
+		});
+		
+		
+	</script>
+</body>
+</html>
